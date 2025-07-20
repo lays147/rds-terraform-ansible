@@ -1,0 +1,38 @@
+name: Run Ansible - Manual Trigger
+
+on:
+  workflow_dispatch:
+    inputs:
+      LAMBDA_NAME:
+        required: true
+        type: choice
+        description: Lambda to trigger
+        options:
+          - ansible-trigger-stg
+          - ansible-trigger-prd
+      ENVIRONMENT:
+        required: true
+        description: Environment to use
+        type: environment
+
+jobs:
+  invoke-lambda:
+    runs-on: ubuntu
+    environment: ${{ inputs.ENVIRONMENT }}
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.ANSIBLE_ASSUME_ROLE }}
+          aws-region: us-east-1
+          mask-aws-account-id: yes
+
+      - name: Invoke lambda function
+        id: lambda
+        run: |
+          aws lambda invoke --function-name ${{ inputs.LAMBDA_NAME }} response.json
+          cat response.json
+          grep -q 'error' response.json && exit 1 || exit 0

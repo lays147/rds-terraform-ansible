@@ -1,0 +1,63 @@
+---
+- name: Configuration of Aurora Serverless Postgres
+  hosts: localhost
+  vars:
+    cluster_name: rds-cluster-name
+    database_name: database-name
+    app_user_name: application-user
+    aws_iam_role: rds_iam
+
+  tasks:
+    - name: Retrieve database info
+      amazon.aws.rds_cluster_info:
+        cluster_name: '{{ cluster_name }}'
+      register: _clusters
+
+    - name: Get Cluster Instance
+      ansible.builtin.set_fact:
+        _cluster_info: '{{ _clusters.clusters | first }}'
+
+    - name: Get Secret key path
+      ansible.builtin.set_fact:
+        secret_path: '{{ _cluster_info.master_user_secret.secret_arn | regex_search("(rds!cluster-.*(?=-[^-]*$))") }}'
+
+    - name: Retrieve database credentials
+      ansible.builtin.set_fact:
+        db_credentials: "{{ lookup('amazon.aws.aws_secret', secret_path) }}"
+
+    - name: Create a new database
+      community.postgresql.postgresql_db:
+        name: '{{ database_name }}'
+        login_user: '{{ db_credentials.username }}'
+        login_password: '{{ db_credentials.password }}'
+        login_host: '{{ _cluster_info.endpoint }}'
+
+    - name: Connect to database, create app user
+      community.postgresql.postgresql_user:
+        db: '{{ database_name }}'
+        name: '{{ app_user_name }}'
+        login_user: '{{ db_credentials.username }}'
+        login_password: '{{ db_credentials.password }}'
+        login_host: '{{ _cluster_info.endpoint }}'
+
+    - name: Grant user access to database
+      community.postgresql.postgresql_privs:
+        db: '{{ database_name }}'
+        privs: ALL
+        type: database
+        role: '{{ app_user_name }}'
+        login_user: '{{ db_credentials.username }}'
+        login_password: '{{ db_credentials.password }}'
+        login_host: '{{ _cluster_info.endpoint }}'
+
+    - name: Allow iam connection from user
+      community.postgresql.postgresql_membership:
+        group: '{{ aws_iam_role }}'
+        target_roles:
+          - '{{ app_user_name }}'
+        state: present
+        db: '{{ database_name }}'
+        login_user: '{{ db_credentials.username }}'
+        login_password: '{{ db_credentials.password }}'
+        login_host: '{{ _cluster_info.endpoint }}'
+        fail_on_role: false

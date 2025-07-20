@@ -1,0 +1,37 @@
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+.terraform/
+.terraform.lock.hcl
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Ansible
+*.retry
+*.log
+*.vault_pass
+*.secret
+*.env
+inventory.ini
+host_vars/
+group_vars/
+ansible.cfg
+
+# General
+*.bak
+*.swp
+*.swo
+*.tmp
+.DS_Store
+.idea/
+.vscode/
+__pycache__/
+*.pyc
+
+# Sensitive files
