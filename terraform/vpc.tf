@@ -1,6 +1,6 @@
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "~> 5.0"
+  version = "~> 6.0"
 
   name               = local.project
   cidr               = local.network.vpc_cidr
@@ -10,33 +10,19 @@ module "vpc" {
   private_subnets              = [for k, v in local.network.azs : cidrsubnet(local.network.vpc_cidr, 8, k + 3)]
   database_subnets             = [for k, v in local.network.azs : cidrsubnet(local.network.vpc_cidr, 8, k + 6)]
   create_database_subnet_group = true
+  tags                         = local.tags
 }
 
-module "security_group" {
+module "https_sg" {
   source  = "terraform-aws-modules/security-group/aws"
-  version = "~> 5.0"
+  version = "~> 5.3"
 
   name        = local.project
-  description = "Postgres Security Group"
+  description = "Allow HTTPS traffic"
   vpc_id      = module.vpc.vpc_id
 
-  # ingress
-  ingress_with_cidr_blocks = [
-    {
-      from_port   = 5432
-      to_port     = 5432
-      protocol    = "tcp"
-      description = "PostgreSQL access from within VPC"
-      cidr_blocks = module.vpc.vpc_cidr_block
-    },
-  ]
-  egress_with_cidr_blocks = [
-    {
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      description = "Egress to all"
-      cidr_blocks = "0.0.0.0/0"
-    },
-  ]
+  egress_cidr_blocks = module.vpc.private_subnets_cidr_blocks
+  egress_rules = [ "https-443-tcp" ]
+
+  tags = local.tags
 }

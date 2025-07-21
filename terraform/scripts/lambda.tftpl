@@ -1,0 +1,24 @@
+const { ECSClient, RunTaskCommand } = require("@aws-sdk/client-ecs");
+
+const client = new ECSClient({ region: "us-east-1" });
+
+const params = {
+  cluster: "${cluster_name}",
+  enableECSManagedTags: true,
+  launchType: "FARGATE",
+  networkConfiguration: {
+    awsvpcConfiguration: {
+      subnets: ${subnets},
+      securityGroups: ${security_group_ids},
+      assignPublicIp: "DISABLED",
+    },
+  },
+  taskDefinition: "${task_definition_name}",
+};
+
+exports.handler = async (event) => {
+  console.log("Triggering task");
+  const command = new RunTaskCommand(params);
+  await client.send(command);
+  console.log("End of trigger - Check ECS Tasks to get status");
+};

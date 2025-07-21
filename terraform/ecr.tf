@@ -1,6 +1,6 @@
 resource "aws_ecr_repository" "this" {
   name                 = local.project
-  image_tag_mutability = "IMMUTABLE"
+  image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
     scan_on_push = true
@@ -35,4 +35,10 @@ data "aws_iam_policy_document" "ecr" {
     ]
     resources = [aws_ecr_repository.this.arn]
   }
+}
+
+resource "aws_iam_role_policy" "ecr_push" {
+  name   = "${local.project}-ecr-policy"
+  role   = aws_iam_role.github_oidc.name
+  policy = data.aws_iam_policy_document.ecr.json
 }

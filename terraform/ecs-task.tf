@@ -1,40 +1,24 @@
-module "ecs_cluster" {
-  source = "terraform-aws-modules/ecs/aws"
-  cluster_name = local.ecs_cluster
+module "ecs_container_definition" {
+  source  = "terraform-aws-modules/ecs/aws//modules/container-definition"
+  version = "~> 6.0"
 
-  # Capacity provider
-  default_capacity_provider_strategy = {
-    FARGATE_SPOT = {
-      weight = 100
-    }
-  }
+  name      = local.project
+  cpu       = local.context[terraform.workspace].ecs.cpu
+  memory    = local.context[terraform.workspace].ecs.memory
+  essential = true
+  image     = "${aws_ecr_repository.this.repository_url}:${local.context[terraform.workspace].ecs.container_tag}"
 
   tags = local.tags
 }
 
-module "container_definition" {
-  source          = "cloudposse/ecs-container-definition/aws"
-  version         = "v0.60.0"
-  container_name  = local.project
-  container_image = local.ecs.container_image
-  log_configuration = {
-    logDriver = "awslogs"
-    options = {
-      "awslogs-group"         = aws_cloudwatch_log_group.this.name
-      "awslogs-region"        = local.region
-      "awslogs-stream-prefix" = "ecs"
-    }
-  }
-}
-
 resource "aws_ecs_task_definition" "this" {
   family                   = local.project
-  container_definitions    = module.container_definition.json_map_encoded_list
+  container_definitions    = module.ecs_container_definition.container_definition_json
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
+  task_role_arn            = aws_iam_role.task_access.arn
+  execution_role_arn       = aws_iam_role.task_execution.arn
   cpu                      = local.context[terraform.workspace].ecs.cpu
   memory                   = local.context[terraform.workspace].ecs.memory
-  task_role_arn            = aws_iam_role.task.arn
-  execution_role_arn       = aws_iam_role.exec.arn
   tags                     = local.tags
 }

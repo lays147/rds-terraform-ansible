@@ -12,7 +12,7 @@ data "aws_iam_policy_document" "ansible_access" {
       "secretsmanager:DescribeSecret",
       "secretsmanager:ListSecretVersionIds"
     ]
-    resources = [ module.aurora_postgresql_v2.cluster_master_user_secret[0].secret_arn ]
+    resources = [module.aurora_postgresql_v2.cluster_master_user_secret[0].secret_arn]
   }
 
   statement {
