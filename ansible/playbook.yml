@@ -27,7 +27,7 @@
 
     - name: Connect to database, create app user
       community.postgresql.postgresql_user:
-        db: '{{ database_name }}'
+        login_db: '{{ database_name }}'
         name: '{{ app_user_name }}'
         login_user: '{{ db_credentials.username }}'
         login_password: '{{ db_credentials.password }}'
@@ -35,7 +35,7 @@
 
     - name: Grant user access to database
       community.postgresql.postgresql_privs:
-        db: '{{ database_name }}'
+        login_db: '{{ database_name }}'
         privs: ALL
         type: database
         role: '{{ app_user_name }}'
@@ -49,7 +49,7 @@
         target_roles:
           - '{{ app_user_name }}'
         state: present
-        db: '{{ database_name }}'
+        login_db: '{{ database_name }}'
         login_user: '{{ db_credentials.username }}'
         login_password: '{{ db_credentials.password }}'
         login_host: '{{ _cluster_info.endpoint }}'
