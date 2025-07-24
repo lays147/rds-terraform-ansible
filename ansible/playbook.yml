@@ -1,10 +1,10 @@
 ---
-- name: Configuration of Aurora Serverless Postgres
+- name: Configuration of Aurora Postgres
   hosts: localhost
   vars:
-    cluster_name: rds-cluster-name
-    database_name: database-name
-    app_user_name: application-user
+    cluster_name: iam-auth-rds-postgresqlv2
+    database_name: aws-summit
+    app_user_name: my_user
     aws_iam_role: rds_iam
 
   tasks:
@@ -24,13 +24,6 @@
     - name: Retrieve database credentials
       ansible.builtin.set_fact:
         db_credentials: "{{ lookup('amazon.aws.aws_secret', secret_path) }}"
-
-    - name: Create a new database
-      community.postgresql.postgresql_db:
-        name: '{{ database_name }}'
-        login_user: '{{ db_credentials.username }}'
-        login_password: '{{ db_credentials.password }}'
-        login_host: '{{ _cluster_info.endpoint }}'
 
     - name: Connect to database, create app user
       community.postgresql.postgresql_user:

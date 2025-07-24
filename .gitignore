@@ -37,3 +37,4 @@ __pycache__/
 # Sensitive files
 *.zip
 hash
+.venv

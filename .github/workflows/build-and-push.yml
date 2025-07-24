@@ -1,0 +1,35 @@
+name: Build and Push to ECR
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ECR_IAM_ROLE }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      
+      - name: Build Docker image
+        id: build
+        run: |
+          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/iam-auth-rds:latest"
+          docker build -t "$IMAGE_URI" -f "${{ inputs.DOCKERFILE }}" .
+          echo "Pushing image to ECR..."
+          docker push "$IMAGE_URI"
+          echo "::notice title=Image Built::The image $IMAGE_URI has been built and pushed successfully."
+        env:
+          DOCKER_BUILDKIT: 1
