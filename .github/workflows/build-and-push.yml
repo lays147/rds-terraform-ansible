@@ -28,7 +28,7 @@ jobs:
         id: build
         run: |
           IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/iam-auth-rds:latest"
-          docker build -t "$IMAGE_URI" .
+          docker build --target runtime -t "$IMAGE_URI" .
           echo "Pushing image to ECR..."
           docker push "$IMAGE_URI"
           echo "::notice title=Image Built::The image $IMAGE_URI has been built and pushed successfully."
