@@ -25,7 +25,7 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
-COPY ./playbook.yml ./playbook.yml
+COPY ./ansible/playbook.yml ./playbook.yml
 
 
 ENTRYPOINT ["ansible-playbook","-i","localhost","playbook.yml"]
