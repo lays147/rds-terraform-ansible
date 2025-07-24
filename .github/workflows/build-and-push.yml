@@ -10,6 +10,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    environment: development
 
     steps:
       - uses: actions/checkout@v4
