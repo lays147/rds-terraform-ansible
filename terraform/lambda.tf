@@ -27,7 +27,8 @@ data "aws_iam_policy_document" "lambda" {
   }
 }
 
-module "ansible_trigger" {
+
+module "ansible_invoke" {
   source  = "terraform-aws-modules/lambda/aws"
   version = "~>v8.0"
 
@@ -40,4 +41,17 @@ module "ansible_trigger" {
   attach_policy_json     = true
   policy_json            = data.aws_iam_policy_document.lambda.json
   tags                   = merge(local.tags, { "Name" : local.project })
+}
+
+data "aws_iam_policy_document" "invoke_lambda" {
+  statement {
+    effect    = "Allow"
+    actions   = ["lambda:InvokeFunction"]
+    resources = [module.ansible_invoke.lambda_function_arn]
+  }
+}
+
+resource "aws_iam_role_policy" "invoke_lambda" {
+  role   = aws_iam_role.github_oidc.name
+  policy = data.aws_iam_policy_document.invoke_lambda.json
 }

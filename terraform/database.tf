@@ -13,6 +13,10 @@ module "aurora_postgresql_v2" {
   engine_version      = data.aws_rds_engine_version.postgresql.version
   storage_encrypted   = true
   deletion_protection = false
+  instance_class      = "db.serverless"
+  instances = {
+    one = {}
+  }
 
   vpc_id               = module.vpc.vpc_id
   db_subnet_group_name = module.vpc.database_subnet_group_name
