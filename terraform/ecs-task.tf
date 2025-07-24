@@ -2,11 +2,12 @@ module "ecs_container_definition" {
   source  = "terraform-aws-modules/ecs/aws//modules/container-definition"
   version = "~> 6.0"
 
-  name      = local.project
-  cpu       = local.context[terraform.workspace].ecs.cpu
-  memory    = local.context[terraform.workspace].ecs.memory
-  essential = true
-  image     = "${aws_ecr_repository.this.repository_url}:${local.context[terraform.workspace].ecs.container_tag}"
+  name                   = local.project
+  cpu                    = local.context[terraform.workspace].ecs.cpu
+  memory                 = local.context[terraform.workspace].ecs.memory
+  essential              = true
+  readonlyRootFilesystem = false
+  image                  = "${aws_ecr_repository.this.repository_url}:${local.context[terraform.workspace].ecs.container_tag}"
 
   tags = local.tags
 }

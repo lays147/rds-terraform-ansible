@@ -28,3 +28,9 @@ resource "aws_iam_policy" "ansible_access" {
   policy = data.aws_iam_policy_document.ansible_access.json
   tags   = local.tags
 }
+
+# Attach the policy to allow the container to query secrets and RDS
+resource "aws_iam_role_policy_attachment" "ansible_access" {
+  role       = aws_iam_role.task_access.name
+  policy_arn = aws_iam_policy.ansible_access.arn
+}
