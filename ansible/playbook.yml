@@ -25,6 +25,13 @@
       ansible.builtin.set_fact:
         db_credentials: "{{ lookup('amazon.aws.aws_secret', secret_path) }}"
 
+    - name: Create a new database
+      community.postgresql.postgresql_db:
+        name: '{{ database_name }}'
+        login_user: '{{ db_credentials.username }}'
+        login_password: '{{ db_credentials.password }}'
+        login_host: '{{ _cluster_info.endpoint }}'
+
     - name: Connect to database, create app user
       community.postgresql.postgresql_user:
         login_db: '{{ database_name }}'
