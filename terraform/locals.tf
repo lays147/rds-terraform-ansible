@@ -3,7 +3,7 @@ locals {
   region  = "us-east-1"
   github = {
     oidc_domain = "token.actions.githubusercontent.com"
-    reponame    = "repo:lays147/rds-terraform-ansible:ref:refs/tags/*"
+    reponame    = "repo:lays147/rds-terraform-ansible:environment:development"
   }
 
   network = {
