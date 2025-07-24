@@ -1,6 +1,9 @@
 FROM python:3.13-alpine AS builder
 
 # RUN apt-get -y update && apt-get -y upgrade && apt-get install -y --no-install-recommends
+RUN apk add --no-cache \
+  build-base \
+  libpq-dev
 
 # hadolint ignore=DL3042
 RUN pip install poetry==2.1.3
