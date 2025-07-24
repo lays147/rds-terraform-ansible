@@ -23,12 +23,13 @@ FROM python:3.13-alpine AS runtime
 
 WORKDIR /app
 
+RUN apk add --no-cache libpq
+
 ENV VIRTUAL_ENV=/app/.venv 
 ENV PATH="/app/.venv/bin:$PATH"
 
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
 COPY ./ansible/playbook.yml ./playbook.yml
-
 
 ENTRYPOINT ["ansible-playbook","-i","localhost","playbook.yml"]
